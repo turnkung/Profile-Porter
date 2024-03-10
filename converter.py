@@ -105,8 +105,14 @@ class Profile_Xml_to_Xlsx :
             permission_list = []
             permission_data = {}
 
-            prohibited_perms = ["loginRanges", "custom", "userLicense"]
-
+            # allowed_permissions = ["loginRanges", "custom", "userLicense"]
+            allowed_permissions = []
+            permission_filter_cfg = open(f"{self.app_path}/appdata/cfg/setting.json")
+            for item in permission_filter_cfg["permission_filter"] :
+                for key, val in item.items() :
+                    if val == True :
+                        allowed_permissions.append(key)
+            
             for file in Path(profile_dir).glob("*.profile-meta.xml") :
                 profile = eTree.parse(profile_dir + file.name)
                 profile_name = str(file.name)[:len(file.name) - 17]

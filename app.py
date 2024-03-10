@@ -249,7 +249,8 @@ class AppGUI :
         while get_timer() < current_time + timeout and process.poll() is None :
             time.sleep(0.5)
         if process.poll() is None :
-            alert = pymsgbox.alert(title="Timeout", text="Salesforce Login Timeout!", button="OK")
+            # alert = pymsgbox.alert(title="Timeout", text="Salesforce Login Timeout!", button="OK")
+            alert = tk.messagebox.showwarning(title="Time out", icon=tk.messagebox.WARNING, message="Salesforce Login Timed Out!")
             process.terminate()
             if sys.platform == "win32" or sys.platfrom == "darwin" :
                 if sys.platform == "win32" :
@@ -364,7 +365,7 @@ class AppGUI :
 
         please_select_org_type_label = ttk.Label(self.popup, text="Please select org type.")
         please_select_org_type_label.place(relx=0.5,  rely=0.2, anchor=tk.CENTER)
-        developer_edition_btn = ttk.Button(self.popup, text="Developer Edition", command=lambda:[self.popup.destroy(), self.update_org_type("Developer Edition"), self.self.sf_authenticate("Developer Edition")])
+        developer_edition_btn = ttk.Button(self.popup, text="Developer Edition", command=lambda:[self.popup.destroy(), self.update_org_type("Developer Edition"), self.sf_authenticate("Developer Edition")])
         developer_edition_btn.place(relx=0.715, rely=0.6, anchor=tk.CENTER)
 
         sandbox_btn = ttk.Button(self.popup, text="Sandbox", command=lambda:[self.popup.destroy(), self.update_org_type("Sandbox"), self.sf_authenticate("Sandbox")])
