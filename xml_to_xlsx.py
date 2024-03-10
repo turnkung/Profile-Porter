@@ -13,10 +13,10 @@ class Profile_Xml_to_Xlsx :
         self.app_path = app_path
         self.salesforce_project_path = f"{self.app_path}/appdata/salesforce/salesforce_project/"
 
-    def start_convert(self, output_path, config_path, org_alias) :
+    def start_convert(self, perm_file_name, output_path, config_path, org_alias) :
         default_package_path = f"{self.salesforce_project_path}/manifest/package.xml"
         # perm_file_name = pymsgbox.prompt(title="File name required.", text="Please enter file name.", default=f"{org_alias.split('_')[1]}_")
-        perm_file_name = simpledialog.askstring(title="Enter file name", prompt="Please enter filename", initialvalue=f"{org_alias.split('_')[1]}_")
+        # perm_file_name = AskStringDialog(title="Enter file name", prompt="Please enter filename", default=f"{org_alias.split('_')[1]}_")
         # perm_file_name = pyautogui.prompt(title="Enter file name", text="Please name the permission file", default=f"{org_alias.split('_')[1]}_")
         print(perm_file_name)
 

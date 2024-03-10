@@ -15,6 +15,7 @@ from tkinter.messagebox import askyesno
 from xml_to_xlsx import Profile_Xml_to_Xlsx
 from tktooltip import ToolTip
 from utils import FileUtils
+from utils import AskStringDialog
 
 class AppGUI :
     def __init__(self) :
@@ -336,10 +337,12 @@ class AppGUI :
         if not os.path.exists(default_output_path):
             os.makedirs(default_output_path)
 
-        config_path = f"{self.app_path}/apdata/stored_selector/{self.target_org.get()}/{self.selector_file.get()}"
+        config_path = f"{self.app_path}/appdata/stored_selector/{self.target_org.get()}/{self.selector_file.get()}"
         # print(config_path)
+        perm_file_name = AskStringDialog(self.main_window, title="Enter file name", prompt="Please name the file", default=f"{self.target_org.get()}_")
+
         converter = Profile_Xml_to_Xlsx(self.app_path)
-        converter.start_convert(default_output_path, config_path, f"pgcv_{self.target_org.get()}")
+        converter.start_convert(perm_file_name.result, default_output_path, config_path, f"pgcv_{self.target_org.get()}")
 
     def popup_select_org_type(self) :
         self.update_org_type(None)
@@ -351,37 +354,13 @@ class AppGUI :
         self.popup.resizable(False, False)
         self.popup.grab_set()
 
-        test = AskStringDialog(self.main_window, title="test", prompt="Please name the permission file", default=f"{self.target_org.get()}_")
-        print(test.result)
+        please_select_org_type_label = ttk.Label(self.popup, text="Please select org type.")
+        please_select_org_type_label.place(relx=0.5,  rely=0.2, anchor=tk.CENTER)
+        developer_edition_btn = ttk.Button(self.popup, text="Developer Edition", command=lambda:[self.popup.destroy(), self.update_org_type("Developer Edition"), self.self.sf_authenticate("Developer Edition")])
+        developer_edition_btn.place(relx=0.715, rely=0.6, anchor=tk.CENTER)
 
-        # please_select_org_type_label = ttk.Label(self.popup, text="Please select org type.")
-        # please_select_org_type_label.place(relx=0.5,  rely=0.2, anchor=tk.CENTER)
-        # developer_edition_btn = ttk.Button(self.popup, text="Developer Edition", command=lambda:[self.popup.destroy(), self.update_org_type("Developer Edition"), self.self.sf_authenticate("Developer Edition")])
-        # developer_edition_btn.place(relx=0.715, rely=0.6, anchor=tk.CENTER)
-
-        # sandbox_btn = ttk.Button(self.popup, text="Sandbox", command=lambda:[self.popup.destroy(), self.update_org_type("Sandbox"), self.sf_authenticate("Sandbox")])
-        # sandbox_btn.place(relx=0.25, rely=0.6, anchor=tk.CENTER)
-
-class AskStringDialog(tk.simpledialog.Dialog) :
-    def __init__(self, parent, title, prompt, default, width=300, height=200) :
-        self.width = width
-        self.height = height
-        self.prompt = prompt
-        self.default = default
-        super().__init__(parent, title)
-    
-    def body(self, container) :
-        self.geometry(f"{self.width}x{self.height}")
-        self.label = ttk.Label(container, text=self.prompt)
-        self.label.pack(padx=10, pady=10)
-        self.entry = ttk.Entry(container)
-        self.entry.insert(0, self.default)
-        self.entry.pack(padx=10, pady=10)
-        self.entry.configure(width="25")
-        return self.entry
-    
-    def apply(self) :
-        self.result = self.entry.get()
+        sandbox_btn = ttk.Button(self.popup, text="Sandbox", command=lambda:[self.popup.destroy(), self.update_org_type("Sandbox"), self.sf_authenticate("Sandbox")])
+        sandbox_btn.place(relx=0.25, rely=0.6, anchor=tk.CENTER)
 
 if __name__ == "__main__" :
     appGui = AppGUI()
