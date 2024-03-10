@@ -1,0 +1,15 @@
+{
+  "Permission_Filter": [
+    {
+      "CustomApplication": "Enabled",
+      "ApexClass": "Enabled",
+      "CustomField": "Enabled",
+      "Flow": "Enabled",
+      "Layout": "Enabled",
+      "CustomObject": "Enabled",
+      "ApexPage": "Enabled",
+      "RecordType": "Enabled",
+      "CustomTab": "Enabled"
+    }
+  ]
+}
