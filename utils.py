@@ -8,3 +8,19 @@ class FileUtils :
             return False, default_settings_json_path
         else :
             return True, default_settings_json_path
+
+class XmlUtils :
+    def indent_root(self, elem, level=0) :
+        i = "\n" + level * "    "
+        if len(elem):
+            if not elem.text or not elem.text.strip():
+                elem.text = i + "    "
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+            for elem in elem:
+                self.indent_root(elem, level + 1)
+            if not elem.tail or not elem.tail.strip():
+                elem.tail = i
+        else:
+            if level and (not elem.tail or not elem.tail.strip()):
+                elem.tail = i

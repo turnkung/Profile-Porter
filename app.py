@@ -9,6 +9,9 @@ import subprocess
 import signal
 from datetime import datetime
 import shutil
+import pyautogui
+from tkinter import simpledialog
+from tkinter.messagebox import askyesno
 from xml_to_xlsx import Profile_Xml_to_Xlsx
 from tktooltip import ToolTip
 from utils import FileUtils
@@ -65,6 +68,7 @@ class AppGUI :
         self.status = ttk.Label(self.main_window, textvariable=self.status_text, relief=tk.SUNKEN, border=1, anchor=tk.S)
         self.status.pack(side=tk.BOTTOM, fill=tk.X)
 
+        # self.main_window.eval('tk::PlaceWindow . center')
         self.main_window.mainloop()
 
     def create_org_selection_section(self) :
@@ -72,22 +76,24 @@ class AppGUI :
         target_org_label.place(x=10, y=10)
 
         target_org_label_pipe = ttk.Label(self.main_window, text="|")
-        target_org_label_pipe.place(x=75, y=10)
+        target_org_label_pipe.place(x=90, y=10)
 
         self.target_org = tk.StringVar()
-        self.target_org_menu = ttk.OptionMenu(self.main_window, self.target_org, "Please select an org...   ", *self.stored_org_list, "Add new org", command=self.target_org_changed)
-        self.target_org_menu.place(x=85, y=9)
+        self.target_org_menu = ttk.OptionMenu(self.main_window, self.target_org, "Please select an org...", *self.stored_org_list, "Add new org", command=self.target_org_changed)
+        self.target_org_menu.place(x=100, y=9)
 
-        target_org_type_label = ttk.Label(self.main_window, text='Org type')
-        target_org_type_label.place(x=10, y=40)
+        # target_org_type_label = ttk.Label(self.main_window, text='Org type')
+        # target_org_type_label.place(x=10, y=40)
         
-        target_org_type_label_pipe = ttk.Label(self.main_window, text="|")
-        target_org_type_label_pipe.place(x=75, y=40)
+        # target_org_type_label_pipe = ttk.Label(self.main_window, text="|")
+        # target_org_type_label_pipe.place(x=75, y=40)
 
-        org_type_list = ["Sandbox", "Developer Edition"]
+        # org_type_list = ["Sandbox", "Developer Edition"]
+        # self.target_org_type_menu = ttk.OptionMenu(self.main_window, self.target_org_type, "Please select target org...", *org_type_list)
+        # self.target_org_type_menu.place(x=85, y=40)
         self.target_org_type = tk.StringVar()
-        self.target_org_type_menu = ttk.OptionMenu(self.main_window, self.target_org_type, "Please select org type...", *org_type_list)
-        self.target_org_type_menu.place(x=85, y=40)
+        self.target_org_type_value = ttk.Label(self.main_window, textvariable=self.target_org_type)
+        self.target_org_type_value.place(x=90, y=40)
 
     def create_retrieve_frame(self, container) :
         retrieve_frame = ttk.Frame(container)
@@ -98,6 +104,7 @@ class AppGUI :
         # self.stored_selectors = os.listdir(f'{self.app_path}/appdata/stored_selector/{self.target_org.get()}')
         self.selector_file = tk.StringVar()
         self.selector_file_menu = ttk.OptionMenu(retrieve_frame, self.selector_file, "", style="border.TMenubutton", command=self.selector_file_changed)
+        self.selector_file_menu.configure(state="disabled")
         self.selector_file_menu.grid(row=0, column=2, padx=5, sticky=tk.W)
         self.retrieve_btn = ttk.Button(retrieve_frame, text="Retrieve Permissions", state=tk.DISABLED, takefocus=0, command=self.retrieve_perms)
         self.retrieve_btn.grid(row=1, column=2, padx=5)
@@ -133,16 +140,24 @@ class AppGUI :
         self.tabs.add(setting_frame, text="Settings")
 
     def target_org_changed(self, *args) :
-        if self.target_org.get() != self.current_target_org :
+        if self.target_org.get() != self.current_target_org or self.target_org.get() == "Add new org":
             self.current_target_org = self.target_org.get()
             self.status_text.set("Processing...")
             # self.main_window.after(100, self.status_text.set, "Ready")
             # self.main_window.wait_variable(self.status_text)
             if self.target_org.get() == "Add new org" :
-                self.target_org.set("Please select an org...    ")
-                org_type = pymsgbox.confirm(title="Select org type", text="Please select org type.", buttons=["Sandbox", "Developer Edition"])
-                if org_type != None :
-                    self.sf_authenticate(org_type)
+                self.target_org.set("Please select an org...")
+                # org_type = pymsgbox.confirm(title="Select org type", text="Please select org type.", buttons=["Sandbox", "Developer Edition"], timeout=7000)
+                # org_type = pyautogui.confirm("KK", buttons=["Sandbox", "Developer Edition"])
+                # org_type = simpledialog.askstring(title="Test", prompt="Entire Start Date in MM/DD/YYYY format:")
+                self.retrieve_btn["state"] = tk.DISABLED
+                self.open_selector_file_btn["state"] = tk.DISABLED
+                self.selector_file.set("")
+                self.selector_file_menu["state"] = tk.DISABLED
+                self.popup_select_org_type()
+                # if org_type != None and org_type in ["Sandbox", "Developer Edition"]:
+                #     self.sf_authenticate(org_type)
+                # print(org_type)
             else :
                 if self.target_org.get() != None :
                     stored_org_file = open(f'{self.app_path}/appdata/stored_orgs/{self.target_org.get()}.json')
@@ -161,12 +176,14 @@ class AppGUI :
 
                     if is_check_alias_complete != None :
                         if stored_org_data["isSandbox"] == True :
-                            self.target_org_type.set("Sandbox")
-                            ToolTip(self.target_org_type_menu, msg="Target org has logged in with Sandbox")
+                            self.update_org_type("Sandbox")
+                            # self.target_org_type.set("Sandbox")
+                            # ToolTip(self.target_org_type_menu, msg="Target org has logged in with Sandbox")
                         else :
-                            self.target_org_type.set("Developer Edition")
-                            ToolTip(self.target_org_type_menu, msg="Target org has logged in with Developer Edition")
-                        self.target_org_type_menu["state"] = tk.DISABLED
+                            self.update_org_type("Developer Edition")
+                            # self.target_org_type.set("Developer Edition")
+                            # ToolTip(self.target_org_type_menu, msg="Target org has logged in with Developer Edition")
+                        # self.target_org_type_menu["state"] = tk.DISABLED
 
                         try :
                             self.stored_selectors = os.listdir(f'{self.app_path}/appdata/stored_selector/{stored_org_data["orgName"]}')
@@ -180,9 +197,34 @@ class AppGUI :
                             self.selector_file_menu.set_menu("", *self.stored_selectors, "Import", "Add new")
                         self.retrieve_btn["state"] = tk.NORMAL
                         self.open_selector_file_btn["state"] = tk.NORMAL
+                        self.selector_file_menu["state"] = tk.NORMAL
 
                         self.status_text.set("Ready")
     
+    def update_org_type(self, org_type) :
+        # self.target_org_type_value = ttk.Label(self.main_window, textvariable=self.target_org_type)
+        # self.target_org_type_value.place(x=90, y=40)
+        # and self.target_org_type_label != None and self.target_org_type_label_pipe != None
+        if org_type == None or org_type == "Add new org" :
+            # if self.target_org_type_label.winfo_exists() == 1 and self.target_org_type_label_pipe.winfo_exists() == 1 :
+            # self.target_org_type_label.after(100, self.target_org_type_label.destroy())
+            try :
+                self.target_org_type_label.destroy()
+                self.target_org_type_label_pipe.destroy()
+                self.target_org_type.set("")
+            except :
+                pass
+        else :
+            self.target_org_type_label = ttk.Label(self.main_window, text='Org type')
+            self.target_org_type_label.place(x=10, y=40)
+        
+            self.target_org_type_label_pipe = ttk.Label(self.main_window, text="|")
+            self.target_org_type_label_pipe.place(x=75, y=40)
+            self.target_org_type.set(org_type)
+
+        # self.main_window.update()
+        # print(self.target_org_type_label.winfo_exists())
+
     def sf_authenticate(self, org_type) :
         if org_type == "Developer Edition" :
             instance_url = "https://login.salesforce.com"
@@ -252,6 +294,12 @@ class AppGUI :
                         else :
                             self.target_org_type.set("Developer Edition")
 
+                        self.retrieve_btn["state"] = tk.NORMAL
+                        self.open_selector_file_btn["state"] = tk.NORMAL
+                        self.selector_file_menu["state"] = tk.NORMAL
+
+                        self.status_text.set("Ready")
+
     def selector_file_changed(self, *args) :
         if self.selector_file.get() == "Add new" :
             self.open_selector_file_btn["state"] = tk.DISABLED
@@ -292,6 +340,48 @@ class AppGUI :
         # print(config_path)
         converter = Profile_Xml_to_Xlsx(self.app_path)
         converter.start_convert(default_output_path, config_path, f"pgcv_{self.target_org.get()}")
+
+    def popup_select_org_type(self) :
+        self.update_org_type(None)
+        self.popup = tk.Toplevel(self.main_window)
+        root_x = self.main_window.winfo_rootx()
+        root_y = self.main_window.winfo_rooty()
+        self.popup.geometry("350x150")
+        self.popup.geometry(f"+{root_x+300}+{root_y+100}") 
+        self.popup.resizable(False, False)
+        self.popup.grab_set()
+
+        test = AskStringDialog(self.main_window, title="test", prompt="Please name the permission file", default=f"{self.target_org.get()}_")
+        print(test.result)
+
+        # please_select_org_type_label = ttk.Label(self.popup, text="Please select org type.")
+        # please_select_org_type_label.place(relx=0.5,  rely=0.2, anchor=tk.CENTER)
+        # developer_edition_btn = ttk.Button(self.popup, text="Developer Edition", command=lambda:[self.popup.destroy(), self.update_org_type("Developer Edition"), self.self.sf_authenticate("Developer Edition")])
+        # developer_edition_btn.place(relx=0.715, rely=0.6, anchor=tk.CENTER)
+
+        # sandbox_btn = ttk.Button(self.popup, text="Sandbox", command=lambda:[self.popup.destroy(), self.update_org_type("Sandbox"), self.sf_authenticate("Sandbox")])
+        # sandbox_btn.place(relx=0.25, rely=0.6, anchor=tk.CENTER)
+
+class AskStringDialog(tk.simpledialog.Dialog) :
+    def __init__(self, parent, title, prompt, default, width=300, height=200) :
+        self.width = width
+        self.height = height
+        self.prompt = prompt
+        self.default = default
+        super().__init__(parent, title)
+    
+    def body(self, container) :
+        self.geometry(f"{self.width}x{self.height}")
+        self.label = ttk.Label(container, text=self.prompt)
+        self.label.pack(padx=10, pady=10)
+        self.entry = ttk.Entry(container)
+        self.entry.insert(0, self.default)
+        self.entry.pack(padx=10, pady=10)
+        self.entry.configure(width="25")
+        return self.entry
+    
+    def apply(self) :
+        self.result = self.entry.get()
 
 if __name__ == "__main__" :
     appGui = AppGUI()

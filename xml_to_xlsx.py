@@ -4,6 +4,9 @@ from pathlib import Path
 import xml.etree.ElementTree as eTree
 import subprocess
 import pymsgbox
+from utils import XmlUtils
+from tkinter import simpledialog
+import pyautogui
 
 class Profile_Xml_to_Xlsx :
     def __init__(self, app_path) :
@@ -12,8 +15,11 @@ class Profile_Xml_to_Xlsx :
 
     def start_convert(self, output_path, config_path, org_alias) :
         default_package_path = f"{self.salesforce_project_path}/manifest/package.xml"
-        perm_file_name = pymsgbox.prompt(title="File name required.", text="Please enter file name.", default=f"{org_alias.split('_')[1]}_")
-        
+        # perm_file_name = pymsgbox.prompt(title="File name required.", text="Please enter file name.", default=f"{org_alias.split('_')[1]}_")
+        perm_file_name = simpledialog.askstring(title="Enter file name", prompt="Please enter filename", initialvalue=f"{org_alias.split('_')[1]}_")
+        # perm_file_name = pyautogui.prompt(title="Enter file name", text="Please name the permission file", default=f"{org_alias.split('_')[1]}_")
+        print(perm_file_name)
+
         if perm_file_name != None :
             self.clear_profile_dir()
             self.read_config(config_path)
@@ -101,18 +107,7 @@ class Profile_Xml_to_Xlsx :
 
             prohibited_perms = ["loginRanges", "custom", "userLicense"]
 
-class XmlUtils :
-    def indent_root(self, elem, level=0) :
-        i = "\n" + level * "    "
-        if len(elem):
-            if not elem.text or not elem.text.strip():
-                elem.text = i + "    "
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-            for elem in elem:
-                self.indent_root(elem, level + 1)
-            if not elem.tail or not elem.tail.strip():
-                elem.tail = i
-        else:
-            if level and (not elem.tail or not elem.tail.strip()):
-                elem.tail = i
+            for file in Path(profile_dir).glob("*.profile-meta.xml") :
+                profile = eTree.parse(profile_dir + file.name)
+                profile_name = str(file.name)[:len(file.name) - 17]
+                permissions = profile.getroot()
