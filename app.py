@@ -12,7 +12,7 @@ import shutil
 import pyautogui
 from tkinter import simpledialog
 from tkinter.messagebox import askyesno
-from xml_to_xlsx import Profile_Xml_to_Xlsx
+from converter import Profile_Xml_to_Xlsx
 from tktooltip import ToolTip
 from utils import FileUtils
 from utils import AskStringDialog
@@ -70,6 +70,7 @@ class AppGUI :
         self.status.pack(side=tk.BOTTOM, fill=tk.X)
 
         # self.main_window.eval('tk::PlaceWindow . center')
+        self.main_window.focus_force()
         self.main_window.mainloop()
 
     def create_org_selection_section(self) :
@@ -94,7 +95,7 @@ class AppGUI :
         # self.target_org_type_menu.place(x=85, y=40)
         self.target_org_type = tk.StringVar()
         self.target_org_type_value = ttk.Label(self.main_window, textvariable=self.target_org_type)
-        self.target_org_type_value.place(x=90, y=40)
+        self.target_org_type_value.place(x=105, y=40)
 
     def create_retrieve_frame(self, container) :
         retrieve_frame = ttk.Frame(container)
@@ -220,8 +221,15 @@ class AppGUI :
             self.target_org_type_label.place(x=10, y=40)
         
             self.target_org_type_label_pipe = ttk.Label(self.main_window, text="|")
-            self.target_org_type_label_pipe.place(x=75, y=40)
+            self.target_org_type_label_pipe.place(x=90, y=40)
             self.target_org_type.set(org_type)
+            # question_btn = ttk.Button(self.main_window, text="?")
+            # question_btn.place(x=170, y=38)
+            # question_btn.configure(width=1)
+            # print(self.target_org_type_value.winfo_rootx())
+            # ToolTip(question_btn, msg=f"Target org has logged in with {org_type}", follow=True)
+            self.target_org_type_value.lift()
+            ToolTip(self.target_org_type_value, msg=f"Target org has logged in with {org_type}", follow=True, delay=0)
 
         # self.main_window.update()
         # print(self.target_org_type_label.winfo_exists())
